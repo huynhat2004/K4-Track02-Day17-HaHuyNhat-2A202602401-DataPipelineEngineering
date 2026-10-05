@@ -2,7 +2,7 @@
 
 **Họ tên / MSSV:** HaHuyNhat / 2A202602401
 **Repo:** K4-Track02-Day17-HaHuyNhat-2A202602401-DataPipelineEngineering
-**Commit bài nộp:** Xem commit HEAD của repo khi nộp (`git log -1 --oneline`).
+**Commit bài nộp:** bd105b78a8f996615b18e6bd7d4ff8cecce404dd
 **AI đã dùng và phạm vi hỗ trợ (hoặc không dùng):** Có dùng Codex để đọc đề, tìm lỗi, sửa pipeline, chạy kiểm chứng và soạn report.
 **Nguồn tham khảo khác (nếu có):** README.md, docs/RUBRIC.md, docs/CHECKPOINTS.md và các model dbt trong repo.
 
@@ -11,12 +11,12 @@
 Mỗi lỗi 4 dòng. Triệu chứng = thứ bạn *thấy* đầu tiên (check nào fail, số nào lạ,
 checksum nào lệch) — không phải cách sửa.
 
-| | Lỗi Silver | Lỗi late data | Lỗi xoá (CDC) |
-|---|---|---|---|
-| **Triệu chứng** | `verify` báo `silver_tickets` có 24 rows cho 12 tickets; T-91 trả về 3 trạng thái. | `gold_feature_daily` lệch full recompute; u05 ngày 2026-08-12 chỉ có `(2, 0)` thay vì `(5, 1)`; P99 lateness 3 ngày nhưng lookback 0. | T-97 không thành tombstone, vẫn còn dữ liệu cá nhân; latest training snapshot còn T-97 và RAG index còn 2 chunks. |
-| **Nguyên nhân gốc** | `upsert_silver_tickets` chỉ `INSERT`, không merge theo khóa; replay batch cũ/new làm sinh nhiều hàng và Gold join bị nhân bản. | `LOOKBACK_DAYS = 0`, daily run chỉ ghi lại partition của ingest day nên event đến muộn không được tính về event day. | `ticket_changes_sql` lấy `ticket_id` từ `after`; với Debezium delete thì `after = null`, bản ghi delete bị loại bởi `WHERE ticket_id IS NOT NULL`. |
-| **Cách sửa** (file, vài dòng) | Trong `pipeline/silver.py`, đổi insert thành `MERGE INTO silver_tickets ON ticket_id`, chỉ update khi `s._lsn > t._lsn`, insert khi chưa có. | Trong `pipeline/config.py`, đặt `LOOKBACK_DAYS = 3` theo `ceil(P99)` đo từ Bronze. | Trong `pipeline/staging.py`, dùng `coalesce(after.ticket_id, before.ticket_id, key.ticket_id)` để giữ delete change; các field PII từ `after` tự null. |
-| **Khái niệm trên slide** | Silver có khóa, upsert idempotent, LSN guard để trạng thái mới nhất thắng. | Late data theo event time, overwrite-partition với lookback đo từ Bronze. | CDC log-based: delete khác Kafka tombstone; xoá phải lan xuống Silver/Gold. |
+|                                         | Lỗi Silver                                                                                                                                             | Lỗi late data                                                                                                                                     | Lỗi xoá (CDC)                                                                                                                                                      |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Triệu chứng**                 | `verify` báo `silver_tickets` có 24 rows cho 12 tickets; T-91 trả về 3 trạng thái.                                                            | `gold_feature_daily` lệch full recompute; u05 ngày 2026-08-12 chỉ có `(2, 0)` thay vì `(5, 1)`; P99 lateness 3 ngày nhưng lookback 0. | T-97 không thành tombstone, vẫn còn dữ liệu cá nhân; latest training snapshot còn T-97 và RAG index còn 2 chunks.                                         |
+| **Nguyên nhân gốc**            | `upsert_silver_tickets` chỉ `INSERT`, không merge theo khóa; replay batch cũ/new làm sinh nhiều hàng và Gold join bị nhân bản.           | `LOOKBACK_DAYS = 0`, daily run chỉ ghi lại partition của ingest day nên event đến muộn không được tính về event day.                | `ticket_changes_sql` lấy `ticket_id` từ `after`; với Debezium delete thì `after = null`, bản ghi delete bị loại bởi `WHERE ticket_id IS NOT NULL`. |
+| **Cách sửa** (file, vài dòng) | Trong`pipeline/silver.py`, đổi insert thành `MERGE INTO silver_tickets ON ticket_id`, chỉ update khi `s._lsn > t._lsn`, insert khi chưa có. | Trong`pipeline/config.py`, đặt `LOOKBACK_DAYS = 3` theo `ceil(P99)` đo từ Bronze.                                                        | Trong`pipeline/staging.py`, dùng `coalesce(after.ticket_id, before.ticket_id, key.ticket_id)` để giữ delete change; các field PII từ `after` tự null.   |
+| **Khái niệm trên slide**       | Silver có khóa, upsert idempotent, LSN guard để trạng thái mới nhất thắng.                                                                     | Late data theo event time, overwrite-partition với lookback đo từ Bronze.                                                                       | CDC log-based: delete khác Kafka tombstone; xoá phải lan xuống Silver/Gold.                                                                                      |
 
 ## 2. Các con số
 
