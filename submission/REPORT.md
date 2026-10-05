@@ -2,7 +2,7 @@
 
 **Họ tên / MSSV:** HaHuyNhat / 2A202602401
 **Repo:** K4-Track02-Day17-HaHuyNhat-2A202602401-DataPipelineEngineering
-**Commit bài nộp:** 974cc5b
+**Commit bài nộp:** Xem commit HEAD của repo khi nộp (`git log -1 --oneline`).
 **AI đã dùng và phạm vi hỗ trợ (hoặc không dùng):** Có dùng Codex để đọc đề, tìm lỗi, sửa pipeline, chạy kiểm chứng và soạn report.
 **Nguồn tham khảo khác (nếu có):** README.md, docs/RUBRIC.md, docs/CHECKPOINTS.md và các model dbt trong repo.
 
