@@ -1,6 +1,6 @@
 # K4-Track02-Day17 — Report cá nhân
 
-**Họ tên / MSSV:** HaHuyNhat / 2A202602401
+**Họ tên / MSSV:** Hà Huy Nhất / 2A202602401
 **Repo:** K4-Track02-Day17-HaHuyNhat-2A202602401-DataPipelineEngineering
 **Commit bài nộp:** bd105b78a8f996615b18e6bd7d4ff8cecce404dd
 **AI đã dùng và phạm vi hỗ trợ (hoặc không dùng):** Có dùng Codex để đọc đề, tìm lỗi, sửa pipeline, chạy kiểm chứng và soạn report.
